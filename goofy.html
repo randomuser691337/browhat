@@ -1,0 +1,54 @@
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.16/peer.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', event => {
+            const peer = new Peer('sender', {
+                secure: true // Use HTTPS
+            });
+
+            peer.on('open', () => {
+                console.log('Sender peer ID:', peer.id);
+            });
+
+            peer.on('error', error => {
+                console.error('PeerJS error:', error);
+            });
+
+            peer.on('connection', conn => {
+                conn.on('open', () => {
+                    console.log('Connection established with receiver');
+                });
+
+                conn.on('data', data => {
+                    console.log('Data received from receiver:', data);
+                });
+            });
+
+            document.querySelector('input').onchange = function (event) {
+                const file = event.target.files[0];
+                const blob = new Blob(event.target.files, { type: file.type });
+
+                const conn = peer.connect('receiver');
+
+                conn.on('open', () => {
+                    conn.send({
+                        file: blob,
+                        filename: file.name,
+                        filetype: file.type
+                    });
+                });
+            };
+        });
+
+    </script>
+</head>
+
+<body>
+    <form>
+        <input type="file" />
+    </form>
+</body>
+
+</html>
